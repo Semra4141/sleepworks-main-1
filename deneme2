@@ -1,0 +1,44 @@
+import mne
+import matplotlib.pyplot as plt
+
+def plot_and_save_eeg_channel(eeg_file_path="data.edf", channel_name="Fp1", interval_length=30):
+    # EEG verisini oku
+    raw = mne.io.read_raw_edf(eeg_file_path, preload=True)
+
+    # EEG verisinin toplam süresini al
+    total_duration = raw.times[-1]
+
+    # Başlangıç zamanı
+    start_time = 0
+
+    # Belirtilen aralıklarla döngüyü başlat
+    while start_time < total_duration:
+        # Bitiş zamanını hesapla
+        end_time = min(start_time + interval_length, total_duration)
+
+        # Belirli bir zaman aralığındaki veriyi seç
+        eeg_data, times = raw[channel_name, int(start_time * raw.info['sfreq']):int(end_time * raw.info['sfreq'])]
+
+        # EEG verisini çiz
+        plt.figure(figsize=(10, 4))
+        plt.plot(times, eeg_data[0], label=f'{channel_name} EEG Verisi', color='blue')
+        plt.title(f'{channel_name} EEG Verisi ({start_time} saniye - {end_time} saniye)')
+        plt.xlabel('Zaman (saniye)')
+        plt.ylabel('EEG Amplitüdü')
+        plt.legend()
+
+        # Dosyayı JPEG olarak kaydet
+        file_name = f"{channel_name}_eeg_{start_time}-{end_time}.jpeg"
+        plt.savefig(file_name, format='jpeg', dpi=300)
+
+        # Oluşturulan grafiği kapat (bu satırı kaldırdık)
+        # plt.close()
+
+        # Başlangıç zamanını bir sonraki aralığa taşı
+        start_time = end_time
+
+    # Bu işlemi tamamladıktan sonra tüm figürleri kapatmak için plt.close() çağırabilirsiniz
+    plt.close('all')
+
+if __name__ == "__main__":
+    plot_and_save_eeg_channel(eeg_file_path="data.edf", channel_name="Fp1", interval_length=30)
